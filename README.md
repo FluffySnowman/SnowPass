@@ -11,6 +11,9 @@ https://github.com/FluffySnowman/SnowPass/assets/51316255/f64c8652-75ce-4fff-921
 ## Table Of Contents
 - [Features](#features)
 - [Usage](#usage)
+- [Installation](#installation)
+  - [Linux](#linux)
+  - [Windows & Mac](#windows-and-mac)
 
 
 ## Features
@@ -19,6 +22,26 @@ https://github.com/FluffySnowman/SnowPass/assets/51316255/f64c8652-75ce-4fff-921
 - Cross platform 
 - Standalone binary
 - Copy to clipboard option
+
+## Installation
+
+### Linux 
+
+- Via curl
+
+```bash
+sudo curl -L -o /usr/local/bin/sp https://github.com/FluffySnowman/SnowPass/releases/download/v0.1.0/snowpass_linux_amd64 && sudo chmod +x /usr/local/bin/sp
+```
+- Via wget 
+
+```bash
+sudo wget -O /usr/local/bin/sp https://github.com/FluffySnowman/SnowPass/releases/download/v0.1.0/snowpass_linux_amd64 && sudo chmod +x /usr/local/bin/sp 
+```
+
+### Windows and Mac
+
+> Installation not tested yet 
+
 
 ## Usage 
 
