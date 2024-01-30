@@ -2,7 +2,7 @@
 
 Demo 
 
-[[add the vid here]]
+![snowpass_demo_video](./media/snowpass_demo_video.mkv)
 
 ## Table Of Contents
 - [Features](#features)
