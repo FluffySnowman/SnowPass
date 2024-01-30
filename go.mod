@@ -1,6 +1,6 @@
 module github.com/fluffysnowman/snowpass
 
-go 1.21.6 
+go 1.20.1
 
 require (
 	github.com/atotto/clipboard v0.1.4
