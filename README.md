@@ -2,7 +2,7 @@
 
 Demo 
 
-![snowpass_demo_video](./media/snowpass_demo_video.mkv)
+![snowpass_demo_video](./media/snowpass_demo.mp4)
 
 ## Table Of Contents
 - [Features](#features)
