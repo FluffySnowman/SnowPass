@@ -38,6 +38,10 @@ sudo curl -L -o /usr/local/bin/sp https://github.com/FluffySnowman/SnowPass/rele
 sudo wget -O /usr/local/bin/sp https://github.com/FluffySnowman/SnowPass/releases/download/v0.1.0/snowpass_linux_amd64 && sudo chmod +x /usr/local/bin/sp 
 ```
 
+Open up a new shell and you should now be able to use the `sp` commad (make
+sure that `/usr/local/bin` is in your `$PATH` [*which can be done by runinng
+`echo $PATH`*])
+
 ### Windows and Mac
 
 > Installation not tested yet 
