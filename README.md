@@ -71,6 +71,8 @@ sp delete-keystore work_secrets
 
 Use `sp help` to display a detaied help list with examples.
 
-[[ add the pic here]]
+
+![help_list](https://github.com/FluffySnowman/SnowPass/assets/51316255/f77287ec-fb74-41c9-81dc-9b36541b29ff)
+
 
 
