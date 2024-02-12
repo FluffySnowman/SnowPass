@@ -623,42 +623,46 @@ func ChangeMasterPassword(keystorePath string) {
 }
 
 func storeKeystorePassword(password string) {
-
 	keystoreID := getCurrentKeystoreID()
-
 	passwordKey := "keystorePassword_" + keystoreID
 	timestampKey := "timestamp_" + keystoreID
 
-	ring.Set(keyring.Item{
+	_ = ring.Set(keyring.Item{
 		Key:  passwordKey,
 		Data: []byte(password),
 	})
-	ring.Set(keyring.Item{
+
+	_ = ring.Set(keyring.Item{
 		Key:  timestampKey,
 		Data: []byte(time.Now().Format(time.RFC3339)),
 	})
 }
 
 func getKeystorePassword() (string, error) {
-
 	keystoreID := getCurrentKeystoreID()
-
 	passwordKey := "keystorePassword_" + keystoreID
 	timestampKey := "timestamp_" + keystoreID
 
-	pw, err := ring.Get(passwordKey)
+	tsItem, err := ring.Get(timestampKey)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not find timestamp in keyring: %v", err)
 	}
-	ts, err := ring.Get(timestampKey)
+
+	timestamp, err := time.Parse(time.RFC3339, string(tsItem.Data))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not parse timestamp: %v", err)
 	}
-	timestamp, _ := time.Parse(time.RFC3339, string(ts.Data))
+
 	if time.Since(timestamp) > 20*time.Minute {
-		ring.Remove(passwordKey)
-		ring.Remove(timestampKey)
+		_ = ring.Remove(passwordKey)
+		_ = ring.Remove(timestampKey)
 		return "", fmt.Errorf("session expired")
 	}
-	return string(pw.Data), nil
+
+	pwItem, err := ring.Get(passwordKey)
+	if err != nil {
+		return "", fmt.Errorf("could not find password in keyring: %v", err)
+	}
+
+	return string(pwItem.Data), nil
 }
