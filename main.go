@@ -12,6 +12,7 @@ import (
 	// "io/ioutil"
 	"os"
 	"path/filepath"
+
 	// "strings"
 
 	// "time"
@@ -24,19 +25,18 @@ import (
 
 	"github.com/fluffysnowman/snowpass/cmd"
 	// "github.com/fluffysnowman/snowpass/models"
-	"github.com/fluffysnowman/snowpass/utils"
 	"github.com/fluffysnowman/snowpass/states"
+	"github.com/fluffysnowman/snowpass/utils"
 )
-
 
 func main() {
 	if len(os.Args) < 2 || os.Args[1] == "help" {
-    cmd.DisplayHelp()
+		cmd.DisplayHelp()
 		return
 	}
 
-  states.GlobalDataDirectory = utils.GetFullDataDir()
-  var dataDir = states.GlobalDataDirectory
+	states.GlobalDataDirectory = utils.GetFullDataDir()
+	var dataDir = states.GlobalDataDirectory
 
 	mode := os.Args[1]
 	var identifier, keystoreName, keystorePath string
@@ -60,29 +60,29 @@ func main() {
 			return
 		}
 		keystoreName = os.Args[4]
-  case "edit":
-    identifier = os.Args[2]
-    keystoreName = os.Args[4]
-    keystorePath = filepath.Join(dataDir, keystoreName+".json")
-    cmd.EditInKeystore(keystorePath, identifier)
-    return
-  case "delete":
-    identifier = os.Args[2]
-    keystoreName = os.Args[4]
-    keystorePath = filepath.Join(dataDir, keystoreName+".json")
-    cmd.DeleteFromKeystore(keystorePath, identifier, keystoreName)
-    return
-  case "delete-keystore":
-    keystoreName = os.Args[2]
-    keystorePath = filepath.Join(dataDir, keystoreName+".json")
-    cmd.DeleteKeystore(keystorePath)
-    return
-  case "change-password":
-    keystoreName = os.Args[2]
-    keystorePath = filepath.Join(dataDir, keystoreName+".json")
-    cmd.ChangeMasterPassword(keystorePath)
-    return
-  case "list":
+	case "edit":
+		identifier = os.Args[2]
+		keystoreName = os.Args[4]
+		keystorePath = filepath.Join(dataDir, keystoreName+".json")
+		cmd.EditInKeystore(keystorePath, identifier)
+		return
+	case "delete":
+		identifier = os.Args[2]
+		keystoreName = os.Args[4]
+		keystorePath = filepath.Join(dataDir, keystoreName+".json")
+		cmd.DeleteFromKeystore(keystorePath, identifier, keystoreName)
+		return
+	case "delete-keystore":
+		keystoreName = os.Args[2]
+		keystorePath = filepath.Join(dataDir, keystoreName+".json")
+		cmd.DeleteKeystore(keystorePath)
+		return
+	case "change-password":
+		keystoreName = os.Args[2]
+		keystorePath = filepath.Join(dataDir, keystoreName+".json")
+		cmd.ChangeMasterPassword(keystorePath)
+		return
+	case "list":
 		cmd.ListAllKeystores(dataDir)
 		return
 	default:
@@ -90,7 +90,7 @@ func main() {
 		return
 	}
 
-  keystorePath = filepath.Join(dataDir, keystoreName+".json")
+	keystorePath = filepath.Join(dataDir, keystoreName+".json")
 
 	switch mode {
 	case "create":
@@ -99,9 +99,8 @@ func main() {
 		cmd.AddToKeystore(keystorePath, identifier, keystoreName)
 	case "get":
 		cmd.GetFromKeystore(keystorePath, identifier)
-  case "copy":
-    cmd.CopyToClipboard(keystorePath, identifier)
-
+	case "copy":
+		cmd.CopyToClipboard(keystorePath, identifier)
 
 		// idk why this isn't working
 		// do not uncomment since everything breaks
@@ -115,4 +114,3 @@ func main() {
 		}*/
 	}
 }
-
