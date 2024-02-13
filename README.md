@@ -13,7 +13,7 @@ https://github.com/FluffySnowman/SnowPass/assets/51316255/f64c8652-75ce-4fff-921
 - [Usage](#usage)
 - [Installation](#installation)
   - [Linux](#linux)
-  - [Windows & Mac](#windows-and-mac)
+  - [Windows](#windows)
 
 
 ## Features
@@ -42,9 +42,17 @@ Open up a new shell and you should now be able to use the `sp` commad (make
 sure that `/usr/local/bin` is in your `$PATH` [*which can be done by runinng
 `echo $PATH`*])
 
-### Windows and Mac
+### Windows 
 
-> Installation not tested yet 
+- Via curl 
+
+```bash
+curl -o C:\Windows\System32\snowpass.exe https://github.com/FluffySnowman/SnowPass/releases/download/v0.2.0/snowpass_windows_x86_64.exe
+```
+
+<br />
+
+#### Mac Installation not tested yet 
 
 
 ## Usage 
