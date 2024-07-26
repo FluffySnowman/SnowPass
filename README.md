@@ -30,12 +30,12 @@ https://github.com/FluffySnowman/SnowPass/assets/51316255/f64c8652-75ce-4fff-921
 - Via curl
 
 ```bash
-sudo curl -L -o /usr/local/bin/sp https://github.com/FluffySnowman/SnowPass/releases/download/v0.2.0/snowpass_linux_amd64 && sudo chmod +x /usr/local/bin/sp
+sudo curl -L -o /usr/local/bin/sp https://github.com/FluffySnowman/SnowPass/releases/download/v0.3.0/snowpass_linux_amd64 && sudo chmod +x /usr/local/bin/sp
 ```
 - Via wget 
 
 ```bash
-sudo wget -O /usr/local/bin/sp https://github.com/FluffySnowman/SnowPass/releases/download/v0.2.0/snowpass_linux_amd64 && sudo chmod +x /usr/local/bin/sp 
+sudo wget -O /usr/local/bin/sp https://github.com/FluffySnowman/SnowPass/releases/download/v0.3.0/snowpass_linux_amd64 && sudo chmod +x /usr/local/bin/sp 
 ```
 
 Open up a new shell and you should now be able to use the `sp` commad (make
