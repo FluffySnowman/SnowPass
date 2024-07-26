@@ -20,6 +20,7 @@ import (
 	"golang.org/x/term"
 
 	"github.com/fluffysnowman/snowpass/models"
+	"github.com/fluffysnowman/snowpass/utils"
 	// "github.com/fluffysnowman/snowpass/utils"
 	"time"
 
@@ -359,7 +360,8 @@ func updateKeystoreIndex(keystoreName, identifier string, add bool) {
 }
 
 func getIndexFilePath(keystoreName string) string {
-	return filepath.Join(dataDir, keystoreName+"_index.json")
+    keystoreIndexJsonFileDirectoryPathShit := utils.GetFullDataDir()
+	return filepath.Join(keystoreIndexJsonFileDirectoryPathShit, keystoreName+"_index.json")
 }
 
 func loadKeystore(keystorePath, password string) (*Keystore, error) {
