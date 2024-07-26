@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
@@ -20,19 +21,13 @@ import (
 	"golang.org/x/term"
 
 	"github.com/fluffysnowman/snowpass/models"
-	"github.com/fluffysnowman/snowpass/utils"
-	// "github.com/fluffysnowman/snowpass/utils"
-	"time"
-
-	"github.com/99designs/keyring"
 	"github.com/fluffysnowman/snowpass/states"
+	"github.com/fluffysnowman/snowpass/utils"
 )
 
 type Keystore models.Keystore
 
 var dataDir = states.GlobalDataDirectory
-
-// keystore id states since I don't want to refactor everything
 
 var currentKeystoreID string
 
@@ -44,27 +39,17 @@ func getCurrentKeystoreID() string {
 	return currentKeystoreID
 }
 
-// session checking for whether to prompt for password or not
-// based on the time or when the password is required or not
-
 var bypassSessionCheck bool
 
 func setBypassSessionCheck(bypass bool) {
 	bypassSessionCheck = bypass
 }
 
-// password session keyring init
-var ring keyring.Keyring
+func promptForPassword(verify bool, keystoreID string) (string, error) {
+	setCurrentKeystoreID(keystoreID)
 
-func init() {
-	ring, _ = keyring.Open(keyring.Config{
-		ServiceName: "snowpass",
-	})
-}
-
-func promptForPassword(verify bool) (string, error) {
 	if !bypassSessionCheck {
-		password, err := getKeystorePassword()
+		password, err := getKeystorePassword(keystoreID)
 		if err == nil {
 			return password, nil
 		}
@@ -93,7 +78,7 @@ func promptForPassword(verify bool) (string, error) {
 	}
 
 	if !bypassSessionCheck {
-		storeKeystorePassword(strings.TrimSpace(password))
+		storeKeystorePassword(keystoreID, strings.TrimSpace(password))
 	}
 
 	return strings.TrimSpace(password), nil
@@ -129,7 +114,10 @@ func CreateKeystore(keystorePath string, keystoreName string) {
 		return
 	}
 
-	password, err := promptForPassword(true)
+	keystoreID := filepath.Base(keystorePath)
+	setBypassSessionCheck(true) // Force a new password prompt
+	password, err := promptForPassword(true, keystoreID)
+	setBypassSessionCheck(false)
 	if err != nil {
 		fmt.Println("Failed to read password:", err)
 		return
@@ -144,7 +132,7 @@ func AddToKeystore(keystorePath, identifier, keystoreName string) {
 	keystoreID := filepath.Base(keystorePath)
 	setCurrentKeystoreID(keystoreID)
 
-	password, err := promptForPassword(false)
+	password, err := promptForPassword(false, keystoreID)
 	if err != nil {
 		fmt.Println("Failed to read password:", err)
 		return
@@ -177,7 +165,7 @@ func GetFromKeystore(keystorePath, identifier string) {
 	keystoreID := filepath.Base(keystorePath)
 	setCurrentKeystoreID(keystoreID)
 
-	password, err := promptForPassword(false)
+	password, err := promptForPassword(false, keystoreID)
 	if err != nil {
 		fmt.Println("Failed to read password:", err)
 		return
@@ -202,7 +190,7 @@ func GetFromKeystore(keystorePath, identifier string) {
 	}
 
 	fmt.Println(data)
-	storeKeystorePassword(password)
+	storeKeystorePassword(keystoreID, password)
 }
 
 func encrypt(data, password string) (string, error) {
@@ -341,7 +329,6 @@ func updateKeystoreIndex(keystoreName, identifier string, add bool) {
 			identifiers = append(identifiers, identifier)
 		}
 	} else {
-		// remove the thing from the index since it wasn't working before
 		for i, id := range identifiers {
 			if id == identifier {
 				identifiers = append(identifiers[:i], identifiers[i+1:]...)
@@ -360,7 +347,7 @@ func updateKeystoreIndex(keystoreName, identifier string, add bool) {
 }
 
 func getIndexFilePath(keystoreName string) string {
-    keystoreIndexJsonFileDirectoryPathShit := utils.GetFullDataDir()
+	keystoreIndexJsonFileDirectoryPathShit := utils.GetFullDataDir()
 	return filepath.Join(keystoreIndexJsonFileDirectoryPathShit, keystoreName+"_index.json")
 }
 
@@ -396,14 +383,12 @@ func ListAllKeystores(listDataDir string) {
 			keystoreName := strings.TrimSuffix(file.Name(), ".json")
 			fmt.Printf("└── ")
 			color.Blue(keystoreName)
-			// fmt.Printf("%v%s\n", color.BlueString("└── "), keystoreName)
 			listKeystore(keystoreName)
 		}
 	}
 
-	// for debugging
 	fmt.Println("\n\n========== DEBUG ============")
-	fmt.Println("data directory location (for bedugging) (may not work on windows)")
+	fmt.Println("data directory location (for debugging) (may not work on windows)")
 	color.Cyan("Quote: Computers are like air conditioners. they become useless when you open windows")
 	fmt.Println(listDataDir)
 	fmt.Println("======== END DEBUG ==========")
@@ -428,8 +413,9 @@ func listKeystore(keystoreName string) {
 	}
 }
 
-func editInKeystore(keystorePath, identifier string) {
-	password, err := promptForPassword(false)
+func EditInKeystore(keystorePath, identifier string) {
+	keystoreID := filepath.Base(keystorePath)
+	password, err := promptForPassword(false, keystoreID)
 	if err != nil {
 		fmt.Println("Error reading password:", err)
 		return
@@ -459,7 +445,8 @@ func editInKeystore(keystorePath, identifier string) {
 }
 
 func DeleteFromKeystore(keystorePath, identifier string, keystoreName string) {
-	password, err := promptForPassword(false)
+	keystoreID := filepath.Base(keystorePath)
+	password, err := promptForPassword(false, keystoreID)
 	if err != nil {
 		fmt.Println("Error reading password:", err)
 		return
@@ -486,7 +473,7 @@ func CopyToClipboard(keystorePath, identifier string) {
 	keystoreID := filepath.Base(keystorePath)
 	setCurrentKeystoreID(keystoreID)
 
-	password, err := promptForPassword(false)
+	password, err := promptForPassword(false, keystoreID)
 	if err != nil {
 		fmt.Println("Error reading password:", err)
 		return
@@ -516,59 +503,27 @@ func CopyToClipboard(keystorePath, identifier string) {
 	}
 
 	fmt.Println("Data copied to clipboard!")
-	storeKeystorePassword(password)
-}
-
-func EditInKeystore(keystorePath, identifier string) {
-	password, err := promptForPassword(false)
-	if err != nil {
-		fmt.Println("Error reading password:", err)
-		return
-	}
-
-	ks, err := loadKeystore(keystorePath, password)
-	if err != nil {
-		fmt.Println("Failed to load keystore:", err)
-		return
-	}
-
-	fmt.Println("Enter new data for", identifier, ":")
-	newData, err := promptForData()
-	if err != nil {
-		fmt.Println("Error reading new data:", err)
-		return
-	}
-
-	encryptedData, err := encrypt(newData, password)
-	if err != nil {
-		fmt.Println("Error encrypting new data:", err)
-		return
-	}
-
-	ks.Passwords[identifier] = encryptedData
-	saveKeystore(keystorePath, ks, password)
+	storeKeystorePassword(keystoreID, password)
 }
 
 func DeleteKeystore(keystorePath string) {
 	err := os.Remove(keystorePath)
 	if err != nil {
-		fmt.Println("Failed to delete keystore:!!!!!!!bruh", err)
+		fmt.Println("Failed to delete keystore:", err)
 		return
 	}
 	fmt.Println("Keystore deleted successfully!")
 }
 
 func ChangeMasterPassword(keystorePath string) {
+	keystoreID := filepath.Base(keystorePath)
 	fmt.Println("Changing master password.")
 
-	fmt.Print("Enter old master password: ")
-	oldPasswordBytes, err := term.ReadPassword(int(os.Stdin.Fd()))
+	oldPassword, err := promptForPassword(false, keystoreID)
 	if err != nil {
 		fmt.Println("Failed to read old password:", err)
 		return
 	}
-	fmt.Println()
-	oldPassword := string(oldPasswordBytes)
 
 	ks, err := loadKeystore(keystorePath, oldPassword)
 	if err != nil {
@@ -576,31 +531,15 @@ func ChangeMasterPassword(keystorePath string) {
 		return
 	}
 
-	fmt.Print("Enter new master password: ")
-	newPasswordBytes, err := term.ReadPassword(int(os.Stdin.Fd()))
+	setBypassSessionCheck(true) // Force a new password prompt
+	newPassword, err := promptForPassword(true, keystoreID)
+	setBypassSessionCheck(false)
 	if err != nil {
-		fmt.Println("Failed to read new password:", err)
-		return
-	}
-	fmt.Println()
-
-	fmt.Print("Verify new master password: ")
-	verifyNewPasswordBytes, err := term.ReadPassword(int(os.Stdin.Fd()))
-	if err != nil {
-		fmt.Println("Failed to verify new password:", err)
-		return
-	}
-	fmt.Println()
-
-	newPassword := string(newPasswordBytes)
-	verifyNewPassword := string(verifyNewPasswordBytes)
-
-	if newPassword != verifyNewPassword {
-		fmt.Println("passwords do not match (*verification).")
+		fmt.Println("Failed to set new password:", err)
 		return
 	}
 
-	// re-encrypting everything so that we don't lose everything (hopefully)
+	// Re-encrypt everything with the new password
 	for id, encryptedData := range ks.Passwords {
 		data, err := decrypt(encryptedData, oldPassword)
 		if err != nil {
@@ -608,63 +547,52 @@ func ChangeMasterPassword(keystorePath string) {
 			return
 		}
 
-		// encrypting everything again
 		newEncryptedData, err := encrypt(data, newPassword)
 		if err != nil {
 			fmt.Printf("Failed to re-encrypt data for %s: %v\n", id, err)
 			return
 		}
 
-		// updating thekeystore
 		ks.Passwords[id] = newEncryptedData
 	}
 
-	// re-updateu everything with the changed thing
 	saveKeystore(keystorePath, ks, newPassword)
+	storeKeystorePassword(keystoreID, newPassword)
 	fmt.Println("Master password changed successfully")
 }
 
-func storeKeystorePassword(password string) {
-	keystoreID := getCurrentKeystoreID()
+func storeKeystorePassword(keystoreID, password string) {
 	passwordKey := "keystorePassword_" + keystoreID
 	timestampKey := "timestamp_" + keystoreID
 
-	_ = ring.Set(keyring.Item{
-		Key:  passwordKey,
-		Data: []byte(password),
-	})
-
-	_ = ring.Set(keyring.Item{
-		Key:  timestampKey,
-		Data: []byte(time.Now().Format(time.RFC3339)),
-	})
+	utils.SetKeyringItem(passwordKey, []byte(password))
+	utils.SetKeyringItem(timestampKey, []byte(time.Now().Format(time.RFC3339)))
 }
 
-func getKeystorePassword() (string, error) {
-	keystoreID := getCurrentKeystoreID()
+func getKeystorePassword(keystoreID string) (string, error) {
 	passwordKey := "keystorePassword_" + keystoreID
 	timestampKey := "timestamp_" + keystoreID
 
-	tsItem, err := ring.Get(timestampKey)
+	tsData, err := utils.GetKeyringItem(timestampKey)
 	if err != nil {
 		return "", fmt.Errorf("could not find timestamp in keyring: %v", err)
 	}
 
-	timestamp, err := time.Parse(time.RFC3339, string(tsItem.Data))
+	timestamp, err := time.Parse(time.RFC3339, string(tsData))
 	if err != nil {
 		return "", fmt.Errorf("could not parse timestamp: %v", err)
 	}
 
 	if time.Since(timestamp) > 20*time.Minute {
-		_ = ring.Remove(passwordKey)
-		_ = ring.Remove(timestampKey)
+		utils.RemoveKeyringItem(passwordKey)
+		utils.RemoveKeyringItem(timestampKey)
 		return "", fmt.Errorf("session expired")
 	}
 
-	pwItem, err := ring.Get(passwordKey)
+	pwData, err := utils.GetKeyringItem(passwordKey)
 	if err != nil {
 		return "", fmt.Errorf("could not find password in keyring: %v", err)
 	}
 
-	return string(pwItem.Data), nil
+	return string(pwData), nil
 }
